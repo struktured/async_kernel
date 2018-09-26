@@ -99,3 +99,42 @@ let find_map t ~f = find_mapi t ~f:(fun _ a -> f a)
 let exists t ~f = existsi t ~f:(fun _ a -> f a)
 let for_all t ~f = for_alli t ~f:(fun _ a -> f a)
 let init ?how n ~f = map ?how (List.init n ~f:Fn.id) ~f
+
+
+let fold_map ~init t ~f =
+  fold ~init:(init, []) t ~f:
+    (fun (acc, l) t ->
+      let%map acc, t = f acc t in
+      acc, t::l
+    )
+    >>| fun (acc, l) -> acc, List.rev l
+
+let fold_mapi ~init t ~f =
+  foldi ~init:(init, []) t ~f:
+    (fun i (acc, l) t ->
+      let%map acc, t = f i acc t in
+      acc, t::l
+    )
+    >>| fun (acc, l) -> acc, List.rev l
+
+let fold_filter_map ~init t ~f =
+  fold ~init:(init, []) t ~f:
+    (fun (acc, l) t ->
+      match%map f acc t with
+         | Some (acc, t) ->
+             (acc, t::l)
+         | None -> (acc, l)
+    )
+    >>| fun (acc, l) -> acc, List.rev l
+
+let partition_map t ~f =
+  let rec loop t fst snd =
+    match t with
+      | [] -> return (List.rev fst, List.rev snd)
+      | x :: t ->
+          match%bind f x with
+        | `Fst y -> loop t (y :: fst) snd
+        | `Snd y -> loop t fst (y :: snd)
+      in
+    loop t [] []
+

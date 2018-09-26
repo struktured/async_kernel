@@ -23,12 +23,23 @@ module type S = sig
   val findi : 'a t -> f:(int -> 'a -> bool monad) -> (int * 'a) option monad
   val find_map : 'a t -> f:('a -> 'b option monad) -> 'b option monad
   val find_mapi : 'a t -> f:(int -> 'a -> 'b option monad) -> 'b option monad
+
+  val fold_map : 'a t -> init:'b -> f:('b -> 'a -> (b' * 'a) monad) ->
+    ('b * 'a) monad
+  val fold_mapi : 'a t -> init:'b -> f:(int -> 'b -> 'a -> ('b * 'a) monad) ->
+    ('b * 'a) monad
+  val fold_filter_map : 'a t -> init:'b ->
+    f:(int -> 'b -> 'a -> ('b * 'a) monad option) -> ('b * 'a) monad
+  (*val partition_map : 'a t -> -> f:('a -> [`Fst of 'b | `Snd of 'c] monad) ->
+    ('b t * 'c t) monad*)
+
   val exists : 'a t -> f:('a -> bool monad) -> bool monad
   val existsi : 'a t -> f:(int -> 'a -> bool monad) -> bool monad
   val for_all : 'a t -> f:('a -> bool monad) -> bool monad
   val for_alli : 'a t -> f:(int -> 'a -> bool monad) -> bool monad
   val all : 'a monad t -> 'a t monad
   val all_unit : unit monad t -> unit monad
+
 
   (** {2 Deferred iterators}
 
